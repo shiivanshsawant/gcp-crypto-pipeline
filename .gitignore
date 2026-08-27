@@ -1,0 +1,20 @@
+# Environment / secrets
+.env
+*.json.key
+service-account*.json
+gcp-credentials*.json
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Local data artifacts
+data/
+*.log
+
+# OS
+.DS_Store

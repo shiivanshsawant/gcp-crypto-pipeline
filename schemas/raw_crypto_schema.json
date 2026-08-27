@@ -1,0 +1,21 @@
+[
+  {"name": "id", "type": "STRING", "mode": "NULLABLE", "description": "CoinGecko coin id, e.g. 'bitcoin'"},
+  {"name": "symbol", "type": "STRING", "mode": "NULLABLE"},
+  {"name": "name", "type": "STRING", "mode": "NULLABLE"},
+  {"name": "current_price", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "market_cap", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "market_cap_rank", "type": "INT64", "mode": "NULLABLE"},
+  {"name": "total_volume", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "high_24h", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "low_24h", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "price_change_24h", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "price_change_percentage_24h", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "price_change_percentage_7d_in_currency", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "circulating_supply", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "total_supply", "type": "FLOAT64", "mode": "NULLABLE"},
+  {"name": "ath", "type": "FLOAT64", "mode": "NULLABLE", "description": "All-time high price"},
+  {"name": "ath_date", "type": "TIMESTAMP", "mode": "NULLABLE"},
+  {"name": "last_updated", "type": "TIMESTAMP", "mode": "NULLABLE", "description": "Timestamp from CoinGecko for this price snapshot"},
+  {"name": "_extracted_at", "type": "TIMESTAMP", "mode": "NULLABLE", "description": "Pipeline-added: when this record was pulled by our extract script"},
+  {"name": "_load_date", "type": "DATE", "mode": "NULLABLE", "description": "Pipeline-added: partition date, matches the GCS path date"}
+]
