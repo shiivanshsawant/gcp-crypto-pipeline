@@ -3,10 +3,9 @@
 -- Builds the analytics-ready table: adds a 7-day moving average of price,
 -- ranks coins by daily volume, and flags top gainers/losers.
 -- This is the table Looker Studio (Phase 7) will read from.
---
--- Replace `your_project` with your actual GCP project id.
 
-CREATE OR REPLACE TABLE `your_project.curated_crypto.curated_crypto_daily` AS
+
+CREATE OR REPLACE TABLE `end-to-end-pipeline-506819.curated_crypto.curated_crypto_daily` AS
 
 SELECT
   coin_id,
@@ -41,6 +40,6 @@ SELECT
     ELSE 'stable'
   END AS daily_movement_flag
 
-FROM `your_project.staging_crypto.stg_crypto_prices`
+FROM `end-to-end-pipeline-506819.staging_crypto.stg_crypto_prices`
 QUALIFY volume_rank_for_day <= 100  -- keep it to top 100 by volume per day
 ORDER BY load_date DESC, volume_rank_for_day ASC;

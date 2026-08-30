@@ -3,10 +3,9 @@
 -- Cleans the raw table: dedupes (in case a job reran for the same day),
 -- filters out junk records, and casts to consistent types.
 -- Run this as a scheduled query, or manually via `bq query` / BQ console.
---
--- Replace `your_project` with your actual GCP project id.
 
-CREATE OR REPLACE TABLE `your_project.staging_crypto.stg_crypto_prices` AS
+
+CREATE OR REPLACE TABLE `end-to-end-pipeline-506819.staging_crypto.stg_crypto_prices` AS
 
 WITH deduped AS (
   SELECT
@@ -17,7 +16,7 @@ WITH deduped AS (
       PARTITION BY id, _load_date
       ORDER BY _extracted_at DESC
     ) AS row_num
-  FROM `your_project.raw_crypto.crypto_prices`
+  FROM `end-to-end-pipeline-506819.raw_crypto.crypto_prices`
 )
 
 SELECT
