@@ -81,9 +81,39 @@ minimum the pipeline actually needs. In a real production setup I'd go
 further and use a dedicated service account instead of the default compute
 one, so a compromised pipeline can't touch anything outside its own scope.
 
+## Phase 6: Data quality checks + alerting
+
+**What I built:** three validation checks (`src/validate.py`) that run after
+every load — row count, null check on critical fields, and a price sanity
+check — wired into `run_pipeline.py` so a failed check raises a
+`DataQualityError`, which exits the container non-zero. A Cloud Logging
+log-based metric (`pipeline-run-failures`) counts ERROR-severity logs from
+the job, and a Cloud Monitoring alert policy emails me when that metric goes
+above 0.
+
+**Verified the whole chain fires for real, not just in theory:** temporarily
+set `COINGECKO_TOP_N=99999` in `env-vars.yaml` so `check_row_count` would
+fail on purpose (100 actual rows vs. ~99994 expected), redeployed, and
+triggered a manual execution. Confirmed:
+
+1. The job failed with `DataQualityError` in the logs
+2. Cloud Run marked the execution as failed (`0 tasks completed successfully`)
+3. An alert email arrived within about a minute, correctly showing the job
+   name, project, and the "Crypto pipeline job failed — check Cloud Run Job
+   logs" documentation text I'd set on the policy
+
+**Thing I learned reading the alert email:** the metric value shown wasn't a
+raw count (e.g. "1 failure") but a rate — `0.0167 ≈ 1/60`, i.e. roughly one
+failure event per second averaged over the 60-second alerting window. That's
+just how Cloud Monitoring reports log-based counter metrics by default
+(rate, not raw count) — good to know so I don't misread it as "1.6% of runs
+failed" or something equally wrong.
+
+Reverted `COINGECKO_TOP_N` back to 100 afterward and confirmed a normal run
+succeeds again before moving on.
+
 ---
 
 ## Next up
 
-- [ ] Phase 6 — data quality checks + Cloud Monitoring alerting
 - [ ] Phase 7 — Looker Studio dashboard on curated data

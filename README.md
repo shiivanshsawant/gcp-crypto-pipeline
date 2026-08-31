@@ -112,7 +112,10 @@ and BigQuery.
 - [x] Phase 5 — Containerized with Docker, deployed as a Cloud Run Job,
       scheduled daily with Cloud Scheduler — pipeline now runs fully
       automated with no manual steps
-- [ ] Phase 6 — Monitoring & data quality checks
+- [x] Phase 6 — Monitoring & data quality checks: row count, null, and price
+      sanity checks run after every load; a Cloud Logging metric + Monitoring
+      alert policy emails on any failure — verified end-to-end with a real
+      induced failure (see LEARNINGS.md)
 - [ ] Phase 7 — Looker Studio dashboard
 
 See [LEARNINGS.md](./LEARNINGS.md) for a running log of what broke, why, and
