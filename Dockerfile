@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Now copy the rest of the application code.
 COPY src/ ./src/
 COPY schemas/ ./schemas/
+COPY sql/ ./sql/
 
 # Cloud Run Jobs pass configuration as environment variables (set later via
 # `gcloud run jobs create --set-env-vars` or `--set-secrets`), not a .env
