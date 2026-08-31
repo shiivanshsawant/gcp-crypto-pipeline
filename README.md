@@ -50,11 +50,16 @@ Monitoring: Cloud Logging + Cloud Monitoring alert on job failure
 │   └── raw_crypto_schema.json   # explicit BigQuery schema for the raw table
 ├── tests/
 │   └── test_fetch_coingecko.py
+├── src/run_pipeline.py          # combined extract+load entrypoint, used by the container
+├── Dockerfile                   # containerizes the pipeline for Cloud Run Jobs
+├── .dockerignore
+├── env-vars.yaml                # env vars for `gcloud run jobs update --env-vars-file`
 ├── infra/                       # (stretch goal) Terraform for GCS bucket / BQ datasets
 ├── .github/workflows/           # (stretch goal) CI: lint + test on push
 ├── requirements.txt
 ├── .env.example
-└── .gitignore
+├── .gitignore
+└── LEARNINGS.md                 # debugging log — what broke, why, and the fix
 ```
 
 ## Setup
@@ -68,15 +73,51 @@ Monitoring: Cloud Logging + Cloud Monitoring alert on job failure
 7. Run the load script: `python src/load/load_to_bq.py`
 8. Run the SQL transforms in `sql/staging/` then `sql/curated/` (via BigQuery console, `bq` CLI, or a scheduled query).
 
+## Deployment (Phase 5 — automated daily runs)
+
+The pipeline runs automatically once a day with no manual steps, via Cloud
+Run Jobs + Cloud Scheduler:
+
+```bash
+# Build and push the container image (via Cloud Build — no local Docker needed)
+gcloud builds submit --tag us-docker.pkg.dev/<PROJECT_ID>/crypto-pipeline-repo/crypto-pipeline:latest .
+
+# Create the Cloud Run Job
+gcloud run jobs create crypto-pipeline-job \
+  --image us-docker.pkg.dev/<PROJECT_ID>/crypto-pipeline-repo/crypto-pipeline:latest \
+  --region us-central1 \
+  --env-vars-file env-vars.yaml
+
+# Schedule it to run daily at 1pm UTC
+gcloud scheduler jobs create http crypto-pipeline-daily \
+  --location us-central1 \
+  --schedule="0 13 * * *" \
+  --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/<PROJECT_ID>/jobs/crypto-pipeline-job:run" \
+  --http-method=POST \
+  --oauth-service-account-email="<PROJECT_NUMBER>-compute@developer.gserviceaccount.com"
+```
+
+The job's service account needs `roles/storage.objectAdmin`,
+`roles/bigquery.dataEditor`, and `roles/bigquery.jobUser` to read/write GCS
+and BigQuery.
+
 ## Build phases (progress checklist)
 
 - [x] Phase 1 — Extract: Python script pulling from CoinGecko API
 - [x] Phase 2 — Land raw data in Cloud Storage
 - [x] Phase 3 — Load into BigQuery raw dataset
-- [ ] Phase 4 — SQL transforms (staging + curated)
-- [ ] Phase 5 — Orchestrate with Cloud Scheduler + Cloud Run Jobs
+- [x] Phase 4 — SQL transforms (staging + curated), including dedup with
+      `ROW_NUMBER()`, a trailing moving average with `AVG() OVER (...)`,
+      and daily volume ranking with `RANK()`
+- [x] Phase 5 — Containerized with Docker, deployed as a Cloud Run Job,
+      scheduled daily with Cloud Scheduler — pipeline now runs fully
+      automated with no manual steps
 - [ ] Phase 6 — Monitoring & data quality checks
 - [ ] Phase 7 — Looker Studio dashboard
+
+See [LEARNINGS.md](./LEARNINGS.md) for a running log of what broke, why, and
+what I learned fixing it along the way — real debugging notes, not a
+retrospective cleanup.
 
 ## Why these tool choices
 
